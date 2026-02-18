@@ -12,6 +12,7 @@ import confetti from 'canvas-confetti';
 
 const WIN_FANFARE_URL = 'https://www.soundjay.com/misc/sounds/bell-ring-01.mp3';
 const CONGRATS_MUSIC_URL = 'https://www.soundjay.com/human/sounds/applause-01.mp3'; 
+const WOW_SOUND_URL = 'https://www.myinstants.com/media/sounds/anime-wow-sound-effect.mp3'; // Professional "WOW" sound
 const LOGO_URL = 'https://mpt-aws-wp-bucket.s3.ap-southeast-1.amazonaws.com/wp-content/uploads/2022/09/23235935/logo-1.webp';
 
 const App: React.FC = () => {
@@ -25,16 +26,22 @@ const App: React.FC = () => {
   
   const fanfareAudioRef = useRef<HTMLAudioElement | null>(null);
   const congratsMusicRef = useRef<HTMLAudioElement | null>(null);
+  const wowAudioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     setSlices(dbService.getSlices());
     setHistory(dbService.getHistory());
     
     fanfareAudioRef.current = new Audio(WIN_FANFARE_URL);
+    wowAudioRef.current = new Audio(WOW_SOUND_URL);
     congratsMusicRef.current = new Audio(CONGRATS_MUSIC_URL);
+    
     if (congratsMusicRef.current) {
       congratsMusicRef.current.loop = true;
-      congratsMusicRef.current.volume = 0.5;
+      congratsMusicRef.current.volume = 0.4;
+    }
+    if (wowAudioRef.current) {
+      wowAudioRef.current.volume = 0.8;
     }
   }, []);
 
@@ -57,7 +64,7 @@ const App: React.FC = () => {
     const interval: any = setInterval(function() {
       const timeLeft = animationEnd - Date.now();
       if (timeLeft <= 0) return clearInterval(interval);
-      const particleCount = 100 * (timeLeft / duration);
+      const particleCount = 120 * (timeLeft / duration);
       confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
       confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
     }, 250);
@@ -66,14 +73,20 @@ const App: React.FC = () => {
   const handleWheelResult = async (winningSlice: SpinSlice) => {
     setLastWin(winningSlice);
     
-    // Play initial fanfare
+    // Play initial fanfare and WOW! sound
     if (fanfareAudioRef.current) {
         fanfareAudioRef.current.currentTime = 0;
         fanfareAudioRef.current.play().catch(() => {});
     }
+    
+    if (wowAudioRef.current && parseInt(winningSlice.amount) > 0) {
+        setTimeout(() => {
+          wowAudioRef.current?.play().catch(() => {});
+        }, 100);
+    }
 
-    // Trigger Confetti for rewards (Amount >= 1500 for more frequency)
-    if (parseInt(winningSlice.amount) >= 1500) {
+    // Trigger Confetti for rewards
+    if (parseInt(winningSlice.amount) >= 250) {
         triggerConfetti();
     }
     
