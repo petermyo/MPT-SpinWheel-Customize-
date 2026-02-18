@@ -66,9 +66,10 @@ const SpinWheel: React.FC<SpinWheelProps> = ({ slices, onResult, isSpinning, set
       
       const textColor = slice.color === COLORS.MPT_BLUE ? '#FFFFFF' : COLORS.MPT_BLUE;
       ctx.fillStyle = textColor;
-      ctx.font = 'bold 18px Inter';
+      // Increased font size for better readability on small screens
+      ctx.font = 'bold 20px Inter';
       ctx.textAlign = 'right';
-      ctx.fillText(`${slice.icon} ${slice.title}`, radius - 25, 6);
+      ctx.fillText(`${slice.icon} ${slice.title}`, radius - 25, 7);
       ctx.restore();
     });
 
@@ -100,7 +101,7 @@ const SpinWheel: React.FC<SpinWheelProps> = ({ slices, onResult, isSpinning, set
     ctx.stroke();
     
     ctx.fillStyle = COLORS.MPT_YELLOW;
-    ctx.font = 'bold 11px Inter';
+    ctx.font = 'bold 12px Inter';
     ctx.textAlign = 'center';
     ctx.fillText('MPT', center, center + 4);
 
@@ -182,37 +183,37 @@ const SpinWheel: React.FC<SpinWheelProps> = ({ slices, onResult, isSpinning, set
 
   return (
     <div className="relative flex flex-col items-center scale-90 sm:scale-100">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-6 z-30 pointer-events-none">
-        <svg width="36" height="46" viewBox="0 0 46 56" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-lg animate-pulse">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-8 z-30 pointer-events-none">
+        <svg width="42" height="52" viewBox="0 0 46 56" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-lg animate-pulse">
           <path d="M23 56L46 0H0L23 56Z" fill="#EF4444" />
           <path d="M23 44L38 6H8L23 44Z" fill="#B91C1C" />
           <circle cx="23" cy="12" r="5" fill="white" />
         </svg>
       </div>
       
-      <div className="bg-white/5 p-4 rounded-full border-[10px] border-mpt-yellow shadow-2xl backdrop-blur-sm relative">
+      <div className="bg-white/5 p-4 rounded-full border-[10px] border-mpt-yellow shadow-[0_0_80px_rgba(255,209,0,0.3)] backdrop-blur-sm relative">
         <canvas 
           ref={canvasRef} 
-          width={400} 
-          height={400} 
-          className="max-w-full h-auto drop-shadow-xl"
+          width={420} 
+          height={420} 
+          className="max-w-full h-auto drop-shadow-2xl"
         />
       </div>
 
       <button
         onClick={handleSpin}
         disabled={isSpinning}
-        className={`mt-6 px-12 py-4 rounded-full font-black text-2xl uppercase tracking-tighter shadow-2xl transition-all active:scale-95 border-b-[6px] relative overflow-hidden ${
+        className={`mt-8 px-16 py-5 rounded-full font-black text-3xl uppercase tracking-tighter shadow-2xl transition-all active:scale-95 border-b-[8px] relative overflow-hidden ${
           isSpinning 
-            ? 'bg-gray-500 border-gray-700 cursor-not-allowed text-gray-200 translate-y-1 border-b-0' 
+            ? 'bg-gray-500 border-gray-700 cursor-not-allowed text-gray-200 translate-y-2 border-b-0' 
             : 'bg-mpt-yellow border-yellow-600 text-blue-900 hover:bg-white hover:text-mpt-blue hover:-translate-y-1'
         }`}
       >
         <span className="relative z-10">{isSpinning ? 'SPINNING...' : 'TAP TO PLAY'}</span>
       </button>
       
-      <p className="mt-3 text-white/30 text-[8px] font-black tracking-widest uppercase">
-        {isSpinning ? 'STAY LUCKY!' : 'BIG REWARDS AWAIT YOU'}
+      <p className="mt-4 text-white/40 text-xs font-black tracking-[0.3em] uppercase">
+        {isSpinning ? 'GOOD LUCK!' : 'WIN BIG REWARDS TODAY'}
       </p>
     </div>
   );
