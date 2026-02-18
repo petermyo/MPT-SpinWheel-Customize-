@@ -5,7 +5,6 @@ import HistoryTable from './components/HistoryTable';
 import AdminPanel from './components/AdminPanel';
 import { dbService } from './services/dbService';
 import { SpinSlice, SpinRecord } from './types';
-import { GoogleGenAI } from "@google/genai";
 import { INITIAL_SLICES, COLORS } from './constants';
 import { Settings, X, TrendingUp, Trophy, PartyPopper } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -28,15 +27,6 @@ const App: React.FC = () => {
   const congratsMusicRef = useRef<HTMLAudioElement | null>(null);
   const wowAudioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Safe API Key retrieval
-  const getApiKey = () => {
-    try {
-      return (typeof process !== 'undefined' && process.env?.API_KEY) || '';
-    } catch (e) {
-      return '';
-    }
-  };
-
   useEffect(() => {
     setSlices(dbService.getSlices());
     setHistory(dbService.getHistory());
@@ -47,10 +37,10 @@ const App: React.FC = () => {
     
     if (congratsMusicRef.current) {
       congratsMusicRef.current.loop = true;
-      congratsMusicRef.current.volume = 0.4;
+      congratsMusicRef.current.volume = 0.3;
     }
     if (wowAudioRef.current) {
-      wowAudioRef.current.volume = 0.8;
+      wowAudioRef.current.volume = 0.7;
     }
   }, []);
 
@@ -64,22 +54,37 @@ const App: React.FC = () => {
   }, [showWinnerPopup]);
 
   const triggerConfetti = () => {
-    const duration = 4 * 1000;
+    const duration = 3 * 1000;
     const animationEnd = Date.now() + duration;
-    const defaults = { startVelocity: 45, spread: 360, ticks: 100, zIndex: 1000 };
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 1000 };
 
     const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
 
     const interval: any = setInterval(function() {
       const timeLeft = animationEnd - Date.now();
       if (timeLeft <= 0) return clearInterval(interval);
-      const particleCount = 120 * (timeLeft / duration);
+      const particleCount = 50 * (timeLeft / duration);
       confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
       confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
     }, 250);
   };
 
-  const handleWheelResult = async (winningSlice: SpinSlice) => {
+  const getStaticMessage = (slice: SpinSlice) => {
+    const amount = parseInt(slice.amount) || 0;
+    if (amount >= 10000) {
+      return "JACKPOT! You are a superstar! Enjoy your massive reward! 🌟";
+    } else if (amount >= 3000) {
+      return "INCREDIBLE! That's a huge win! You're having a lucky day! 🚀";
+    } else if (amount >= 500) {
+      return "CONGRATULATIONS! You've won a fantastic prize! 🥳";
+    } else if (amount > 0) {
+      return "NICE! Every win counts. Keep spinning for more! 👍";
+    } else {
+      return "So close! Don't give up, your big win is just a spin away! 💪";
+    }
+  };
+
+  const handleWheelResult = (winningSlice: SpinSlice) => {
     setLastWin(winningSlice);
     
     if (fanfareAudioRef.current) {
@@ -93,7 +98,7 @@ const App: React.FC = () => {
         }, 100);
     }
 
-    if (parseInt(winningSlice.amount) >= 250) {
+    if (parseInt(winningSlice.amount) >= 500) {
         triggerConfetti();
     }
     
@@ -107,27 +112,8 @@ const App: React.FC = () => {
     
     const updatedHistory = dbService.addSpinRecord(newRecord);
     setHistory(updatedHistory);
+    setWinnerMessage(getStaticMessage(winningSlice));
     setShowWinnerPopup(true);
-    
-    const apiKey = getApiKey();
-    if (apiKey) {
-      try {
-        const ai = new GoogleGenAI({ apiKey });
-        const prompt = winningSlice.amount === '0' 
-          ? `A person just spun a wheel and landed on "${winningSlice.title}". Write a very short, friendly, encouraging 1-sentence message for an MPT user.`
-          : `An MPT user just won "${winningSlice.title}". Write a short, exciting congratulatory 1-sentence message under 15 words.`;
-        
-        const response = await ai.models.generateContent({
-          model: 'gemini-3-flash-preview',
-          contents: prompt
-        });
-        setWinnerMessage(response.text || `Congratulations! You got ${winningSlice.title}!`);
-      } catch (e) {
-        setWinnerMessage(`Fantastic! You've just unlocked ${winningSlice.title}! 🥳`);
-      }
-    } else {
-      setWinnerMessage(`Fantastic! You've just unlocked ${winningSlice.title}! 🥳`);
-    }
   };
 
   const updateSlices = (newSlices: SpinSlice[]) => {
@@ -151,27 +137,29 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-mpt-blue selection:bg-mpt-yellow selection:text-blue-900 text-white pb-10 overflow-x-hidden">
-      <nav className="sticky top-0 z-40 bg-white/95 backdrop-blur-md shadow-2xl py-3 px-6 mb-12 flex items-center justify-between border-b-4 border-mpt-yellow">
-        <div className="flex items-center gap-6">
-          <img src={LOGO_URL} alt="MPT Logo" className="h-10 w-auto object-contain" />
-          <div className="h-8 w-[2px] bg-gray-200 hidden md:block"></div>
-          <h1 className="text-blue-900 font-black text-2xl uppercase tracking-tighter hidden sm:block italic">MPT Spin Wheel</h1>
+    <div className="h-screen bg-mpt-blue selection:bg-mpt-yellow selection:text-blue-900 text-white overflow-hidden flex flex-col">
+      <nav className="z-40 bg-white/95 backdrop-blur-md shadow-lg py-2 px-6 flex items-center justify-between border-b-2 border-mpt-yellow shrink-0">
+        <div className="flex items-center gap-4">
+          <img src={LOGO_URL} alt="MPT Logo" className="h-8 w-auto object-contain" />
+          <div className="h-6 w-[1px] bg-gray-200 hidden md:block"></div>
+          <h1 className="text-blue-900 font-black text-xl uppercase tracking-tighter hidden sm:block italic leading-none">MPT Spin Wheel</h1>
         </div>
         <button 
           onClick={() => setShowAdmin(!showAdmin)}
-          className="p-3 rounded-2xl bg-gray-50 hover:bg-mpt-yellow/20 text-blue-900 transition-all active:scale-90 border border-gray-100"
+          className="p-2 rounded-xl bg-gray-50 hover:bg-mpt-yellow/20 text-blue-900 transition-all active:scale-90 border border-gray-100"
         >
-          {showAdmin ? <X size={28} /> : <Settings size={28} />}
+          {showAdmin ? <X size={20} /> : <Settings size={20} />}
         </button>
       </nav>
 
-      <main className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-        <div className="lg:col-span-3 h-[600px] sticky top-32">
+      <main className="flex-1 overflow-hidden p-4 grid grid-cols-1 lg:grid-cols-12 gap-4 max-w-[1600px] mx-auto w-full">
+        {/* Left Side: History */}
+        <div className="lg:col-span-3 h-full overflow-hidden flex flex-col">
           <HistoryTable history={history} onClear={clearHistory} />
         </div>
 
-        <div className="lg:col-span-6 flex flex-col items-center">
+        {/* Center: Wheel */}
+        <div className="lg:col-span-6 flex flex-col items-center justify-center">
             <SpinWheel 
                 slices={slices} 
                 onResult={handleWheelResult} 
@@ -180,84 +168,89 @@ const App: React.FC = () => {
             />
         </div>
 
-        <div className="lg:col-span-3 space-y-8 sticky top-32">
-            <div className="w-full bg-white/10 rounded-[2.5rem] p-10 border-2 border-white/10 backdrop-blur-xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)]">
-                <div className="flex items-center gap-3 mb-8 text-mpt-yellow font-black uppercase tracking-[0.2em] text-xs">
-                    <TrendingUp size={24} strokeWidth={3} />
+        {/* Right Side: Stats & Info */}
+        <div className="lg:col-span-3 space-y-4 flex flex-col h-full">
+            <div className="bg-white/10 rounded-3xl p-6 border border-white/10 backdrop-blur-xl shadow-2xl flex-shrink-0">
+                <div className="flex items-center gap-2 mb-4 text-mpt-yellow font-black uppercase tracking-widest text-[10px]">
+                    <TrendingUp size={16} strokeWidth={3} />
                     <span>Real-time Activity</span>
                 </div>
-                <div className="grid grid-cols-1 gap-6">
-                    <div className="bg-gradient-to-br from-white/10 to-transparent p-6 rounded-3xl border border-white/10">
-                        <div className="text-[10px] text-mpt-yellow/60 uppercase font-black mb-1 tracking-widest">Global Spins</div>
-                        <div className="text-4xl font-black tabular-nums tracking-tighter">{history.length}</div>
+                <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-white/5 p-3 rounded-2xl border border-white/5">
+                        <div className="text-[9px] text-mpt-yellow/60 uppercase font-black mb-0.5">Global Spins</div>
+                        <div className="text-2xl font-black tabular-nums">{history.length}</div>
                     </div>
-                    <div className="bg-gradient-to-br from-white/10 to-transparent p-6 rounded-3xl border border-white/10">
-                        <div className="text-[10px] text-mpt-yellow/60 uppercase font-black mb-1 tracking-widest">Big Rewards Today</div>
-                        <div className="text-4xl font-black text-mpt-yellow tabular-nums tracking-tighter">
+                    <div className="bg-white/5 p-3 rounded-2xl border border-white/5">
+                        <div className="text-[9px] text-mpt-yellow/60 uppercase font-black mb-0.5">Big Wins</div>
+                        <div className="text-2xl font-black text-mpt-yellow tabular-nums">
                             {history.filter(h => parseInt(h.amount) >= 3000).length}
                         </div>
                     </div>
                 </div>
             </div>
             
-            <div className="bg-white/95 backdrop-blur-md rounded-[2.5rem] p-10 text-gray-800 shadow-2xl border-4 border-white/50">
-                <h4 className="font-black text-mpt-blue mb-6 uppercase tracking-widest text-xs flex items-center gap-2">
-                   <PartyPopper size={18} /> How to win
+            <div className="bg-white/95 backdrop-blur-md rounded-3xl p-6 text-gray-800 shadow-2xl border-2 border-white/50 flex-1 overflow-auto custom-scrollbar">
+                <h4 className="font-black text-mpt-blue mb-4 uppercase tracking-widest text-[10px] flex items-center gap-2 shrink-0">
+                   <PartyPopper size={14} /> How to win
                 </h4>
-                <ul className="space-y-6">
-                    <li className="flex gap-4 items-start">
-                        <div className="bg-mpt-blue text-white w-8 h-8 rounded-xl flex items-center justify-center text-sm font-black shrink-0 shadow-lg">1</div>
-                        <p className="text-sm font-bold text-gray-600 leading-snug">Tap <span className="text-blue-900">TAP TO PLAY</span> to start your fortune spin.</p>
+                <ul className="space-y-4">
+                    <li className="flex gap-3 items-start">
+                        <div className="bg-mpt-blue text-white w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black shrink-0">1</div>
+                        <p className="text-[11px] font-bold text-gray-600 leading-tight">Tap <span className="text-blue-900">TAP TO PLAY</span> to spin.</p>
                     </li>
-                    <li className="flex gap-4 items-start">
-                        <div className="bg-mpt-blue text-white w-8 h-8 rounded-xl flex items-center justify-center text-sm font-black shrink-0 shadow-lg">2</div>
-                        <p className="text-sm font-bold text-gray-600 leading-snug">Wait for pointer to select your lucky reward.</p>
+                    <li className="flex gap-3 items-start">
+                        <div className="bg-mpt-blue text-white w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black shrink-0">2</div>
+                        <p className="text-[11px] font-bold text-gray-600 leading-tight">Wait for the lucky reward to stop.</p>
                     </li>
-                    <li className="flex gap-4 items-start">
-                        <div className="bg-mpt-blue text-white w-8 h-8 rounded-xl flex items-center justify-center text-sm font-black shrink-0 shadow-lg">3</div>
-                        <p className="text-sm font-bold text-gray-600 leading-snug">Winning items are saved in the left panel!</p>
+                    <li className="flex gap-3 items-start">
+                        <div className="bg-mpt-blue text-white w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black shrink-0">3</div>
+                        <p className="text-[11px] font-bold text-gray-600 leading-tight">Rewards are saved in the winners panel!</p>
                     </li>
                 </ul>
+                <div className="mt-6 pt-4 border-t border-gray-100 opacity-50 text-center">
+                   <p className="text-[8px] font-black tracking-widest uppercase">© MPT Spin Wheel 2024</p>
+                </div>
             </div>
         </div>
       </main>
 
+      {/* Reduced Font Size Winner Modal */}
       {showWinnerPopup && lastWin && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
-            <div className="absolute inset-0 bg-mpt-blue/85 backdrop-blur-2xl animate-in fade-in duration-500" onClick={() => setShowWinnerPopup(false)} />
-            <div className="relative bg-white w-full max-sm:max-w-[90%] max-w-sm rounded-[3rem] p-10 text-center shadow-[0_0_150px_rgba(255,209,0,0.7)] border-[10px] border-mpt-yellow animate-in zoom-in slide-in-from-bottom-20 duration-500">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-mpt-blue/80 backdrop-blur-xl animate-in fade-in duration-300" onClick={() => setShowWinnerPopup(false)} />
+            <div className="relative bg-white w-full max-w-xs rounded-[2.5rem] p-8 text-center shadow-2xl border-[6px] border-mpt-yellow animate-in zoom-in duration-300">
                 
-                <div className="absolute -top-16 left-1/2 -translate-x-1/2 bg-mpt-yellow w-32 h-32 rounded-full border-[6px] border-white flex items-center justify-center shadow-[0_15px_40px_rgba(0,0,0,0.3)] animate-bounce-slow">
-                    <Trophy size={64} className="text-blue-900" />
+                <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-mpt-yellow w-24 h-24 rounded-full border-4 border-white flex items-center justify-center shadow-xl animate-bounce-slow">
+                    <Trophy size={48} className="text-blue-900" />
                 </div>
 
-                <div className="mt-16 mb-6">
-                    <h2 className="text-blue-900 font-black text-6xl tracking-tighter uppercase mb-4 drop-shadow-sm">WOW!</h2>
+                <div className="mt-8 mb-4">
+                    <h2 className="text-blue-900 font-black text-4xl tracking-tighter uppercase mb-2">WOW!</h2>
                     
-                    <div className="flex justify-center mb-6">
-                      <div className="text-[110px] filter drop-shadow-2xl leading-none transform hover:rotate-12 transition-transform cursor-pointer">
+                    <div className="flex justify-center mb-4">
+                      <div className="text-8xl leading-none transform hover:rotate-12 transition-transform cursor-pointer drop-shadow-lg">
                         {lastWin.icon}
                       </div>
                     </div>
 
-                    <p className="text-gray-500 font-black text-[11px] uppercase tracking-[0.4em] mb-4">You just won</p>
+                    <p className="text-gray-500 font-black text-[9px] uppercase tracking-[0.3em] mb-3">You just won</p>
                     
-                    <div className="bg-gray-100 py-6 px-4 rounded-[2rem] border-4 border-gray-200 shadow-inner w-full flex items-center justify-center">
-                        <span className="text-blue-900 font-black text-5xl italic tracking-tighter block leading-tight uppercase text-center">
+                    <div className="bg-gray-50 py-4 px-3 rounded-2xl border-2 border-gray-100 shadow-inner">
+                        <span className="text-blue-900 font-black text-3xl italic tracking-tighter block leading-tight uppercase">
                           {lastWin.title}
                         </span>
                     </div>
                 </div>
 
-                <div className="px-2 mb-8">
-                  <p className="text-gray-800 font-bold text-xl leading-snug">
+                <div className="px-1 mb-6">
+                  <p className="text-gray-700 font-bold text-sm leading-snug">
                     {winnerMessage}
                   </p>
                 </div>
 
                 <button 
                     onClick={() => setShowWinnerPopup(false)}
-                    className="w-full py-5 bg-mpt-yellow hover:bg-blue-900 hover:text-white text-blue-900 rounded-[1.5rem] font-black text-3xl uppercase tracking-tighter transition-all shadow-[0_8px_0_#B49400] hover:shadow-none hover:translate-y-2 active:scale-95"
+                    className="w-full py-3.5 bg-mpt-yellow hover:bg-blue-900 hover:text-white text-blue-900 rounded-2xl font-black text-xl uppercase tracking-tighter transition-all shadow-[0_4px_0_#B49400] active:translate-y-1 active:shadow-none"
                 >
                     AWESOME!
                 </button>
@@ -266,25 +259,20 @@ const App: React.FC = () => {
       )}
 
       {showAdmin && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-mpt-blue/95 backdrop-blur-3xl animate-in fade-in duration-300">
-          <div className="w-full max-w-2xl animate-in zoom-in slide-in-from-bottom-10 duration-500">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-mpt-blue/90 backdrop-blur-2xl">
+          <div className="w-full max-w-2xl">
              <div className="relative">
                 <button 
                   onClick={() => setShowAdmin(false)}
-                  className="absolute -top-20 right-0 text-white hover:text-mpt-yellow transition-all hover:rotate-90 p-4"
+                  className="absolute -top-12 right-0 text-white hover:text-mpt-yellow p-2"
                 >
-                  <X size={48} />
+                  <X size={32} />
                 </button>
                 <AdminPanel slices={slices} onSave={updateSlices} onReset={resetSlices} />
              </div>
           </div>
         </div>
       )}
-      
-      <footer className="mt-24 text-center pb-12">
-          <img src={LOGO_URL} alt="MPT Logo" className="h-8 mx-auto opacity-30 grayscale mb-4" />
-          <p className="font-black text-[10px] tracking-[0.5em] text-white/20 uppercase">Myanmar's Number One Network</p>
-      </footer>
     </div>
   );
 };

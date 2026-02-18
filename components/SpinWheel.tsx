@@ -18,12 +18,11 @@ const SpinWheel: React.FC<SpinWheelProps> = ({ slices, onResult, isSpinning, set
   const [displayRotation, setDisplayRotation] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   
-  // Track slice crossing for tick sound
   const lastSliceIdxRef = useRef(-1);
 
   useEffect(() => {
     audioRef.current = new Audio(TICK_SOUND_URL);
-    audioRef.current.volume = 0.5; // Increased volume for better clarity
+    audioRef.current.volume = 0.4;
   }, []);
 
   const playTick = () => {
@@ -58,7 +57,7 @@ const SpinWheel: React.FC<SpinWheelProps> = ({ slices, onResult, isSpinning, set
       ctx.fillStyle = slice.color;
       ctx.fill();
       ctx.strokeStyle = COLORS.DARK_BLUE;
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 1;
       ctx.stroke();
 
       ctx.save();
@@ -67,16 +66,16 @@ const SpinWheel: React.FC<SpinWheelProps> = ({ slices, onResult, isSpinning, set
       
       const textColor = slice.color === COLORS.MPT_BLUE ? '#FFFFFF' : COLORS.MPT_BLUE;
       ctx.fillStyle = textColor;
-      ctx.font = 'bold 25px Inter';
+      ctx.font = 'bold 18px Inter';
       ctx.textAlign = 'right';
-      ctx.fillText(`${slice.icon} ${slice.title}`, radius - 20, 10);
+      ctx.fillText(`${slice.icon} ${slice.title}`, radius - 25, 6);
       ctx.restore();
     });
 
     ctx.beginPath();
     ctx.arc(center, center, radius, 0, 2 * Math.PI);
     ctx.strokeStyle = COLORS.MPT_YELLOW;
-    ctx.lineWidth = 10;
+    ctx.lineWidth = 8;
     ctx.stroke();
 
     const dots = 24;
@@ -84,26 +83,26 @@ const SpinWheel: React.FC<SpinWheelProps> = ({ slices, onResult, isSpinning, set
         const dotAngle = (i / dots) * 2 * Math.PI;
         ctx.beginPath();
         ctx.arc(
-            center + (radius - 5) * Math.cos(dotAngle),
-            center + (radius - 5) * Math.sin(dotAngle),
-            3, 0, 2 * Math.PI
+            center + (radius - 4) * Math.cos(dotAngle),
+            center + (radius - 4) * Math.sin(dotAngle),
+            2.5, 0, 2 * Math.PI
         );
         ctx.fillStyle = i % 2 === 0 ? 'white' : COLORS.MPT_YELLOW;
         ctx.fill();
     }
 
     ctx.beginPath();
-    ctx.arc(center, center, 30, 0, 2 * Math.PI);
+    ctx.arc(center, center, 25, 0, 2 * Math.PI);
     ctx.fillStyle = COLORS.DARK_BLUE;
     ctx.fill();
     ctx.strokeStyle = COLORS.MPT_YELLOW;
-    ctx.lineWidth = 5;
+    ctx.lineWidth = 4;
     ctx.stroke();
     
     ctx.fillStyle = COLORS.MPT_YELLOW;
-    ctx.font = 'bold 14px Inter';
+    ctx.font = 'bold 11px Inter';
     ctx.textAlign = 'center';
-    ctx.fillText('MPT', center, center + 6);
+    ctx.fillText('MPT', center, center + 4);
 
   }, [slices]);
 
@@ -143,11 +142,9 @@ const SpinWheel: React.FC<SpinWheelProps> = ({ slices, onResult, isSpinning, set
     let rotationDiff = targetRotationMod - startRotationMod;
     if (rotationDiff <= 0) rotationDiff += 2 * Math.PI;
     
-    const extraFullSpins = 10 + Math.floor(Math.random() * 5); // Faster and more spins for excitement
+    const extraFullSpins = 8 + Math.floor(Math.random() * 4);
     const totalRotationToApply = rotationDiff + (extraFullSpins * 2 * Math.PI);
-    const finalRotation = startRotation + totalRotationToApply;
-
-    const duration = 7000;
+    const duration = 6000;
     let startTime: number | null = null;
 
     const animate = (now: number) => {
@@ -155,7 +152,7 @@ const SpinWheel: React.FC<SpinWheelProps> = ({ slices, onResult, isSpinning, set
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / duration, 1);
       
-      const ease = 1 - Math.pow(1 - progress, 5);
+      const ease = 1 - Math.pow(1 - progress, 4);
       const currentRotation = startRotation + totalRotationToApply * ease;
       
       let effectivePointerAngle = (pointerAngle - currentRotation) % (2 * Math.PI);
@@ -184,40 +181,37 @@ const SpinWheel: React.FC<SpinWheelProps> = ({ slices, onResult, isSpinning, set
   };
 
   return (
-    <div className="relative flex flex-col items-center">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-8 z-30 pointer-events-none">
-        <svg width="46" height="56" viewBox="0 0 46 56" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-[0_4px_15px_rgba(0,0,0,0.6)] animate-pulse">
+    <div className="relative flex flex-col items-center scale-90 sm:scale-100">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-6 z-30 pointer-events-none">
+        <svg width="36" height="46" viewBox="0 0 46 56" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-lg animate-pulse">
           <path d="M23 56L46 0H0L23 56Z" fill="#EF4444" />
           <path d="M23 44L38 6H8L23 44Z" fill="#B91C1C" />
           <circle cx="23" cy="12" r="5" fill="white" />
         </svg>
       </div>
       
-      <div className="bg-white/5 p-8 rounded-full border-[14px] border-mpt-yellow shadow-[0_0_100px_rgba(255,209,0,0.4)] backdrop-blur-md relative group">
-        <div className="absolute inset-2 rounded-full border-2 border-dashed border-white/30 animate-[spin_60s_linear_infinite]"></div>
-        
+      <div className="bg-white/5 p-4 rounded-full border-[10px] border-mpt-yellow shadow-2xl backdrop-blur-sm relative">
         <canvas 
           ref={canvasRef} 
-          width={460} 
-          height={460} 
-          className="max-w-full h-auto drop-shadow-[0_20px_60px_rgba(0,0,0,0.5)]"
+          width={400} 
+          height={400} 
+          className="max-w-full h-auto drop-shadow-xl"
         />
       </div>
 
       <button
         onClick={handleSpin}
         disabled={isSpinning}
-        className={`mt-12 px-20 py-6 rounded-full font-black text-4xl uppercase tracking-tighter shadow-2xl transition-all active:scale-95 border-b-[10px] relative overflow-hidden ${
+        className={`mt-6 px-12 py-4 rounded-full font-black text-2xl uppercase tracking-tighter shadow-2xl transition-all active:scale-95 border-b-[6px] relative overflow-hidden ${
           isSpinning 
-            ? 'bg-gray-500 border-gray-700 cursor-not-allowed text-gray-300 translate-y-2 border-b-0' 
-            : 'bg-mpt-yellow border-yellow-600 text-blue-900 hover:bg-white hover:text-mpt-blue hover:-translate-y-2 hover:shadow-yellow-400/80 shadow-[0_15px_30px_rgba(255,209,0,0.3)]'
+            ? 'bg-gray-500 border-gray-700 cursor-not-allowed text-gray-200 translate-y-1 border-b-0' 
+            : 'bg-mpt-yellow border-yellow-600 text-blue-900 hover:bg-white hover:text-mpt-blue hover:-translate-y-1'
         }`}
       >
         <span className="relative z-10">{isSpinning ? 'SPINNING...' : 'TAP TO PLAY'}</span>
-        {!isSpinning && <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full hover:translate-x-full transition-transform duration-1000 ease-in-out"></div>}
       </button>
       
-      <p className="mt-4 text-white/40 text-[10px] font-black tracking-[0.4em] uppercase">
+      <p className="mt-3 text-white/30 text-[8px] font-black tracking-widest uppercase">
         {isSpinning ? 'STAY LUCKY!' : 'BIG REWARDS AWAIT YOU'}
       </p>
     </div>
