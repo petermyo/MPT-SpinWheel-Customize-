@@ -12,7 +12,7 @@ import confetti from 'canvas-confetti';
 
 const WIN_FANFARE_URL = 'https://www.soundjay.com/misc/sounds/bell-ring-01.mp3';
 const CONGRATS_MUSIC_URL = 'https://www.soundjay.com/human/sounds/applause-01.mp3'; 
-const WOW_SOUND_URL = 'https://www.myinstants.com/media/sounds/anime-wow-sound-effect.mp3'; // Professional "WOW" sound
+const WOW_SOUND_URL = 'https://www.myinstants.com/media/sounds/anime-wow-sound-effect.mp3';
 const LOGO_URL = 'https://mpt-aws-wp-bucket.s3.ap-southeast-1.amazonaws.com/wp-content/uploads/2022/09/23235935/logo-1.webp';
 
 const App: React.FC = () => {
@@ -27,6 +27,15 @@ const App: React.FC = () => {
   const fanfareAudioRef = useRef<HTMLAudioElement | null>(null);
   const congratsMusicRef = useRef<HTMLAudioElement | null>(null);
   const wowAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Safe API Key retrieval
+  const getApiKey = () => {
+    try {
+      return (typeof process !== 'undefined' && process.env?.API_KEY) || '';
+    } catch (e) {
+      return '';
+    }
+  };
 
   useEffect(() => {
     setSlices(dbService.getSlices());
@@ -73,7 +82,6 @@ const App: React.FC = () => {
   const handleWheelResult = async (winningSlice: SpinSlice) => {
     setLastWin(winningSlice);
     
-    // Play initial fanfare and WOW! sound
     if (fanfareAudioRef.current) {
         fanfareAudioRef.current.currentTime = 0;
         fanfareAudioRef.current.play().catch(() => {});
@@ -85,7 +93,6 @@ const App: React.FC = () => {
         }, 100);
     }
 
-    // Trigger Confetti for rewards
     if (parseInt(winningSlice.amount) >= 250) {
         triggerConfetti();
     }
@@ -102,18 +109,23 @@ const App: React.FC = () => {
     setHistory(updatedHistory);
     setShowWinnerPopup(true);
     
-    try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
-      const prompt = winningSlice.amount === '0' 
-        ? `A person just spun a wheel and landed on "${winningSlice.title}". Write a very short, friendly, encouraging 1-sentence message for an MPT user.`
-        : `An MPT user just won "${winningSlice.title}". Write a short, exciting congratulatory 1-sentence message under 15 words.`;
-      
-      const response = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
-        contents: prompt
-      });
-      setWinnerMessage(response.text || `Congratulations! You got ${winningSlice.title}!`);
-    } catch (e) {
+    const apiKey = getApiKey();
+    if (apiKey) {
+      try {
+        const ai = new GoogleGenAI({ apiKey });
+        const prompt = winningSlice.amount === '0' 
+          ? `A person just spun a wheel and landed on "${winningSlice.title}". Write a very short, friendly, encouraging 1-sentence message for an MPT user.`
+          : `An MPT user just won "${winningSlice.title}". Write a short, exciting congratulatory 1-sentence message under 15 words.`;
+        
+        const response = await ai.models.generateContent({
+          model: 'gemini-3-flash-preview',
+          contents: prompt
+        });
+        setWinnerMessage(response.text || `Congratulations! You got ${winningSlice.title}!`);
+      } catch (e) {
+        setWinnerMessage(`Fantastic! You've just unlocked ${winningSlice.title}! 🥳`);
+      }
+    } else {
       setWinnerMessage(`Fantastic! You've just unlocked ${winningSlice.title}! 🥳`);
     }
   };
@@ -210,13 +222,11 @@ const App: React.FC = () => {
         </div>
       </main>
 
-      {/* Winner Modal Popup - Enhanced Visibility & Sound */}
       {showWinnerPopup && lastWin && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
             <div className="absolute inset-0 bg-mpt-blue/85 backdrop-blur-2xl animate-in fade-in duration-500" onClick={() => setShowWinnerPopup(false)} />
             <div className="relative bg-white w-full max-sm:max-w-[90%] max-w-sm rounded-[3rem] p-10 text-center shadow-[0_0_150px_rgba(255,209,0,0.7)] border-[10px] border-mpt-yellow animate-in zoom-in slide-in-from-bottom-20 duration-500">
                 
-                {/* Trophy Header */}
                 <div className="absolute -top-16 left-1/2 -translate-x-1/2 bg-mpt-yellow w-32 h-32 rounded-full border-[6px] border-white flex items-center justify-center shadow-[0_15px_40px_rgba(0,0,0,0.3)] animate-bounce-slow">
                     <Trophy size={64} className="text-blue-900" />
                 </div>
@@ -224,7 +234,6 @@ const App: React.FC = () => {
                 <div className="mt-16 mb-6">
                     <h2 className="text-blue-900 font-black text-6xl tracking-tighter uppercase mb-4 drop-shadow-sm">WOW!</h2>
                     
-                    {/* Icon Display */}
                     <div className="flex justify-center mb-6">
                       <div className="text-[110px] filter drop-shadow-2xl leading-none transform hover:rotate-12 transition-transform cursor-pointer">
                         {lastWin.icon}
@@ -233,7 +242,6 @@ const App: React.FC = () => {
 
                     <p className="text-gray-500 font-black text-[11px] uppercase tracking-[0.4em] mb-4">You just won</p>
                     
-                    {/* Reward Box - Guaranteed Visibility */}
                     <div className="bg-gray-100 py-6 px-4 rounded-[2rem] border-4 border-gray-200 shadow-inner w-full flex items-center justify-center">
                         <span className="text-blue-900 font-black text-5xl italic tracking-tighter block leading-tight uppercase text-center">
                           {lastWin.title}

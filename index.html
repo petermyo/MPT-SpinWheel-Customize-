@@ -13,6 +13,7 @@
     body {
       font-family: 'Inter', sans-serif;
       background-color: #005BAA; /* MPT Blue */
+      margin: 0;
     }
     .mpt-yellow { color: #FFD100; }
     .bg-mpt-yellow { background-color: #FFD100; }
@@ -20,7 +21,6 @@
     .bg-mpt-blue { background-color: #005BAA; }
     .border-mpt-yellow { border-color: #FFD100; }
 
-    /* Hide number input spinners for a cleaner UI */
     input::-webkit-outer-spin-button,
     input::-webkit-inner-spin-button {
       -webkit-appearance: none;
@@ -30,7 +30,6 @@
       -moz-appearance: textfield;
     }
 
-    /* Custom scrollbar for admin panel */
     .custom-scrollbar::-webkit-scrollbar {
       width: 6px;
     }
@@ -57,18 +56,21 @@
 <script type="importmap">
 {
   "imports": {
-    "react/": "https://esm.sh/react@^19.2.4/",
     "react": "https://esm.sh/react@^19.2.4",
-    "@google/genai": "https://esm.sh/@google/genai@^1.41.0",
-    "date-fns": "https://esm.sh/date-fns@^4.1.0",
     "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "date-fns": "https://esm.sh/date-fns@^4.1.0",
     "lucide-react": "https://esm.sh/lucide-react@^0.574.0",
-    "canvas-confetti": "https://esm.sh/canvas-confetti@^1.9.3"
+    "@google/genai": "https://esm.sh/@google/genai@^1.41.0",
+    "canvas-confetti": "https://esm.sh/canvas-confetti@^1.9.4",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.4",
+    "vite": "https://esm.sh/vite@^7.3.1"
   }
 }
 </script>
 </head>
 <body>
   <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
 </body>
 </html>
