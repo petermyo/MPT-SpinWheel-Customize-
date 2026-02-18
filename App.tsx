@@ -144,7 +144,7 @@ const App: React.FC = () => {
         <div className="flex items-center gap-6">
           <img src={LOGO_URL} alt="MPT Logo" className="h-10 w-auto object-contain" />
           <div className="h-8 w-[2px] bg-gray-200 hidden md:block"></div>
-          <h1 className="text-blue-900 font-black text-2xl uppercase tracking-tighter hidden sm:block italic">Fortune Spin Hub</h1>
+          <h1 className="text-blue-900 font-black text-2xl uppercase tracking-tighter hidden sm:block italic">MPT Spin Wheel</h1>
         </div>
         <button 
           onClick={() => setShowAdmin(!showAdmin)}
@@ -214,7 +214,7 @@ const App: React.FC = () => {
       {showWinnerPopup && lastWin && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
             <div className="absolute inset-0 bg-mpt-blue/85 backdrop-blur-2xl animate-in fade-in duration-500" onClick={() => setShowWinnerPopup(false)} />
-            <div className="relative bg-white w-full max-w-sm rounded-[3rem] p-10 text-center shadow-[0_0_150px_rgba(255,209,0,0.7)] border-[10px] border-mpt-yellow animate-in zoom-in slide-in-from-bottom-20 duration-500">
+            <div className="relative bg-white w-full max-sm:max-w-[90%] max-w-sm rounded-[3rem] p-10 text-center shadow-[0_0_150px_rgba(255,209,0,0.7)] border-[10px] border-mpt-yellow animate-in zoom-in slide-in-from-bottom-20 duration-500">
                 
                 {/* Trophy Header */}
                 <div className="absolute -top-16 left-1/2 -translate-x-1/2 bg-mpt-yellow w-32 h-32 rounded-full border-[6px] border-white flex items-center justify-center shadow-[0_15px_40px_rgba(0,0,0,0.3)] animate-bounce-slow">
