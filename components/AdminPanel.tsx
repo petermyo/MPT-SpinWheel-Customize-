@@ -98,7 +98,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ slices, onSave, onReset }) => {
                 />
               </div>
               <div className="space-y-2">
-                <label className="block text-xs uppercase font-black text-gray-500 tracking-widest px-1">Winning Chance (%)</label>
+                <label className="block text-xs uppercase font-black text-gray-500 tracking-widest px-1">Chance (%)</label>
                 <input 
                   type="number"
                   value={slice.chance}
