@@ -71,11 +71,11 @@ const App: React.FC = () => {
 
   const getStaticMessage = (slice: SpinSlice) => {
     const amount = parseInt(slice.amount) || 0;
-    if (amount >= 10000) {
+    if (amount >= 70000) {
       return "JACKPOT! You are a superstar! Enjoy your massive reward! 🌟";
-    } else if (amount >= 3000) {
+    } else if (amount >= 15000) {
       return "INCREDIBLE! That's a huge win! You're having a lucky day! 🚀";
-    } else if (amount >= 500) {
+    } else if (amount >= 7000) {
       return "CONGRATULATIONS! You've won a fantastic prize! 🥳";
     } else if (amount > 0) {
       return "NICE! Every win counts. Keep spinning for more! 👍";
@@ -183,7 +183,7 @@ const App: React.FC = () => {
                     <div className="bg-white/5 p-4 rounded-2xl border border-white/5 flex justify-between items-center">
                         <div className="text-xs text-mpt-yellow/70 uppercase font-black tracking-widest">Big Wins</div>
                         <div className="text-3xl font-black text-mpt-yellow tabular-nums">
-                            {history.filter(h => parseInt(h.amount) >= 3000).length}
+                            {history.filter(h => parseInt(h.amount) >= 15000).length}
                         </div>
                     </div>
                 </div>
