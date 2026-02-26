@@ -177,7 +177,7 @@ const App: React.FC = () => {
                 </div>
                 <div className="grid grid-cols-1 gap-4">
                     <div className="bg-white/5 p-4 rounded-2xl border border-white/5 flex justify-between items-center">
-                        <div className="text-xs text-mpt-yellow/70 uppercase font-black tracking-widest">Global Spins</div>
+                        <div className="text-xs text-mpt-yellow/70 uppercase font-black tracking-widest">Total Spins</div>
                         <div className="text-3xl font-black tabular-nums">{history.length}</div>
                     </div>
                     <div className="bg-white/5 p-4 rounded-2xl border border-white/5 flex justify-between items-center">
