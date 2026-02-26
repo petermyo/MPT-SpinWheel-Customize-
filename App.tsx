@@ -142,7 +142,7 @@ const App: React.FC = () => {
         <div className="flex items-center gap-4">
           <img src={LOGO_URL} alt="MPT Logo" className="h-9 w-auto object-contain" />
           <div className="h-8 w-[1px] bg-gray-200 hidden md:block"></div>
-          <h1 className="text-blue-900 font-black text-2xl uppercase tracking-tighter hidden sm:block italic leading-none">MPT Spin Wheel</h1>
+          <h1 className="text-blue-900 font-black text-2xl uppercase tracking-tighter hidden sm:block italic leading-none">ချာချာလည်ပြီး ဆုတွေယူ</h1>
         </div>
         <button 
           onClick={() => setShowAdmin(!showAdmin)}
