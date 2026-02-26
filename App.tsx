@@ -183,7 +183,7 @@ const App: React.FC = () => {
                     <div className="bg-white/5 p-4 rounded-2xl border border-white/5 flex justify-between items-center">
                         <div className="text-xs text-mpt-yellow/70 uppercase font-black tracking-widest">Big Wins</div>
                         <div className="text-3xl font-black text-mpt-yellow tabular-nums">
-                            {history.filter(h => parseInt(h.amount) >= 15000).length}
+                            {history.filter(h => parseInt(h.amount) >= 70000).length}
                         </div>
                     </div>
                 </div>
