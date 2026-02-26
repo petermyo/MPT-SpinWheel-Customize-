@@ -18,7 +18,8 @@ export const INITIAL_SLICES: SpinSlice[] = [
 { id: '1', title: 'NoteBook', amount: '2500', icon: '📓', chance: 3, color: COLORS.MPT_BLUE },
 { id: '2', title: '500MB', amount: '7400', icon: '📶', chance: 21, color: COLORS.MPT_YELLOW },
 { id: '3', title: '1 GB', amount: '15000', icon: '📶', chance: 17, color: COLORS.MPT_BLUE },
-{ id: '4', title: '500MB', amount: '7400', icon: '📶', chance: 21, color: COLORS.MPT_YELLOW },
-{ id: '5', title: '1 GB', amount: '15000', icon: '📶', chance: 16, color: COLORS.MPT_BLUE },
-{ id: '6', title: '5 GB', amount: '75000', icon: '⚡', chance: 21, color: COLORS.WHITE },  
+{ id: '4', title: '5 GB', amount: '75000', icon: '⚡', chance: 11, color: COLORS.WHITE },
+{ id: '5', title: '500MB', amount: '7400', icon: '📶', chance: 21, color: COLORS.MPT_YELLOW },
+{ id: '6', title: '1 GB', amount: '15000', icon: '📶', chance: 16, color: COLORS.MPT_BLUE },
+{ id: '7', title: '5 GB', amount: '75000', icon: '⚡', chance: 10, color: COLORS.WHITE },  
 ];
